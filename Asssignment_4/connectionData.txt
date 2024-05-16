@@ -1,0 +1,9 @@
+<?php
+
+$server = "ix.cs.uoregon.edu";
+$dbname ="bighitvideo";
+$user = "guest";
+$pass = "guest";
+$port="3128";
+
+?>
