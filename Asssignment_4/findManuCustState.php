@@ -22,7 +22,7 @@ or die('Error connecting to MySQL server.');
   
 $manufact = $_POST['manufact'];
 
-$state = mysqli_real_escape_string($conn, $state);
+$manufact = mysqli_real_escape_string($conn, $manufact);
 // this is a small attempt to avoid SQL injection
 // better to use prepared statements
 
