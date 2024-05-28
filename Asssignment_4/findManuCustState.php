@@ -26,12 +26,15 @@ $manufact = mysqli_real_escape_string($conn, $manufact);
 // this is a small attempt to avoid SQL injection
 // better to use prepared statements
 
-$query = "SELECT order_num, CONCAT(fname, " ", lname) AS fullname, description ";
-$query = $query."FROM stores7.orders o JOIN stores7.customer c USING(customer_num) ";
-$query = $query."JOIN stores7.items i USING(order_num) JOIN stores7.stock s ON ";
-$query = $query."i.stock_num=s.stock_num AND i.manu_code=s.manu_code JOIN ";
-$query = $query."stores7.manufact m ON s.manu_code=m.manu_code WHERE manu_name = ";
-$query = $query."'".$manufact."' ORDER BY order_num;";
+//$query = "SELECT order_num, CONCAT(fname, " ", lname) AS fullname, description ";
+//$query = $query."FROM stores7.orders o JOIN stores7.customer c USING(customer_num) ";
+//$query = $query."JOIN stores7.items i USING(order_num) JOIN stores7.stock s ON ";
+//$query = $query."i.stock_num=s.stock_num AND i.manu_code=s.manu_code JOIN ";
+//$query = $query."stores7.manufact m ON s.manu_code=m.manu_code WHERE manu_name = ";
+//$query = $query."'".$manufact."' ORDER BY order_num;";
+SELECT * FROM stores7.manufact;
+$query = "SELECT manu_name, manu_code FROM stores7.manufact WHERE manu_name = ";
+$query = $query."'".$manufact."';";
 
 ?>
 
