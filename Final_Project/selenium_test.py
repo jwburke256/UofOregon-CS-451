@@ -26,30 +26,27 @@ try:
     wait = WebDriverWait(driver, 10)
     backlog_table = wait.until(EC.presence_of_element_located((By.CLASS_NAME,
                                                                'in')))
-    backlog_wrapper = backlog_table.find_element(By.CLASS_NAME, 'UserGameList_table_wrapper__ctpqq')
-    backlog_table_dividers = backlog_wrapper.find_elements(By.CLASS_NAME, 'UserGameList_table_divider__GOZvP')
+    backlog_wrapper = backlog_table.find_element(By.CLASS_NAME,
+                                                 'UserGameList_table_wrapper__ctpqq')
+    backlog_table_dividers = backlog_wrapper.find_elements(By.CLASS_NAME,
+                                                           'UserGameList_table_divider__GOZvP')
     for table_divider in backlog_table_dividers:
-        tr = table_divider.find_element(By.CLASS_NAME, 'UserGameList_table_row__ARuWH')
-        # Locate the <a> element using XPath
-        a_element = table_divider.find_element(By.XPATH,
-            "//div[@class='UserGameList_table_cell__1DLNr UserGameList_short__B1zyG']/a")
-        title = a_element.get_attribute('title')
-        print(f"Title: {title}")
-        #print(a_element.get_attribute('innerHTML'))
+        tr = table_divider.find_element(By.CLASS_NAME,
+                                        'UserGameList_table_row__ARuWH')
 
-        inner_html = tr.get_attribute('innerHTML')
-        #tcell = tr.find_element(By.CSS_SELECTOR,
-        # 'UserGameList_table_cell__1DLNr UserGameList_long__P0lUQ')
+        title = tr.find_element(By.CSS_SELECTOR,
+                                '.UserGameList_table_cell__1DLNr a').get_attribute('title')
+        platform = tr.find_element(By.CSS_SELECTOR,
+                                   '.UserGameList_platform_alt__mehJr').text
+        href = tr.find_element(By.CSS_SELECTOR,
+                               '.UserGameList_table_cell__1DLNr a').get_attribute('href')
+        print(title)
+        print(platform)
+        print(href)
+        #inner_html = tr.get_attribute('innerHTML')
         #print(inner_html)
         print()
-        #print('\n')
 
-    #print(backlog_table)
-    #print(backlog_wrapper)
-    #print('\n')
-    #for table_divider in backlog_table_dividers:
-        #print(table_divider)
-    #print(driver.page_source)
 
 except TimeoutException:
     print("Timed out waiting for page to load")
