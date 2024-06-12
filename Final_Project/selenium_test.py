@@ -1,3 +1,4 @@
+from datetime import datetime
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.by import By
@@ -11,14 +12,44 @@ import time
 import sys
 
 
+def clear_table(table_name):
+    try:
+        # Establish a connection to the MySQL server
+        conn = mysql.connector.connect(
+            host='localhost',  # or '127.0.0.1'
+            user='root',
+            password='1178',
+            database='how_long_to_filter'
+        )
+
+        cursor = conn.cursor()
+
+        # Clear the table using TRUNCATE
+        cursor.execute(f"TRUNCATE TABLE {table_name}")
+
+        # Commit the transaction (not necessary for TRUNCATE, but good practice)
+        conn.commit()
+        print(f"Table {table_name} cleared successfully.")
+
+    except mysql.connector.Error as err:
+        if err.errno == errorcode.ER_ACCESS_DENIED_ERROR:
+            print("Something is wrong with your user name or password")
+        elif err.errno == errorcode.ER_BAD_DB_ERROR:
+            print("Database does not exist")
+        else:
+            print(err)
+    else:
+        cursor.close()
+        conn.close()
+
 def insert_game_data(data):
     try:
         # Establish a connection to the MySQL server
         conn = mysql.connector.connect(
             host='localhost',  # or '127.0.0.1'
-            user='root',  # replace with your MySQL username
-            password='1178',  # replace with your MySQL password
-            database='how_long_to_filter'  # replace with your database name
+            user='root',
+            password='1178',
+            database='how_long_to_filter'
         )
 
         cursor = conn.cursor()
@@ -148,10 +179,13 @@ for dict in gaming_dicts:
                     element_index = element_text.rfind(':')
                     publisher = element_text[element_index + 2:]
                     dict['pub_name'] = publisher
-                elif element_text.__contains__("NA"):
+                elif element_text.__contains__("NA:"):
                     element_index = element_text.rfind(':')
                     na_release = element_text[element_index + 2:]
-                    dict['na_release'] = na_release
+                    # need to adjust for MySQL date format
+                    date_obj = datetime.strptime(na_release, '%B %d, %Y')
+                    formatted_na_release = date_obj.strftime('%Y-%m-%d')
+                    dict['na_release'] = formatted_na_release
             # if no publisher, developer also becomes publisher
             if 'pub_name' not in dict:
                 dict['pub_name'] = dict['dev_name']
@@ -196,5 +230,6 @@ for dict in gaming_dicts:
     data_to_insert.append((dict['game_num'], dict['title'],
                            dict['na_release'], dict['dev_name'],
                            dict['pub_name']))
+clear_table('video_games')
 insert_game_data(data_to_insert)
 driver.quit()
