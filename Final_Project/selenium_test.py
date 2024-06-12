@@ -42,6 +42,7 @@ def clear_table(table_name):
         cursor.close()
         conn.close()
 
+
 def insert_game_data(data):
     try:
         # Establish a connection to the MySQL server
@@ -57,6 +58,39 @@ def insert_game_data(data):
         # Insert data
         add_data = ("INSERT INTO video_games (game_num, title, na_release, "
                     "dev_name, pub_name) VALUES (%s, %s, %s, %s, %s)")
+        cursor.executemany(add_data, data)
+
+        # Commit the transaction
+        conn.commit()
+        print(f"Data inserted successfully: {cursor.rowcount} rows affected.")
+
+    except mysql.connector.Error as err:
+        if err.errno == errorcode.ER_ACCESS_DENIED_ERROR:
+            print("Something is wrong with your user name or password")
+        elif err.errno == errorcode.ER_BAD_DB_ERROR:
+            print("Database does not exist")
+        else:
+            print(err)
+    else:
+        cursor.close()
+        conn.close()
+
+
+def insert_game_times(data):
+    try:
+        # Establish a connection to the MySQL server
+        conn = mysql.connector.connect(
+            host='localhost',  # or '127.0.0.1'
+            user='root',
+            password='1178',
+            database='how_long_to_filter'
+        )
+
+        cursor = conn.cursor()
+
+        # Insert data
+        add_data = ("INSERT INTO completion_times (game_num, title, main, "
+                    "main_sides, completionist) VALUES (%s, %s, %s, %s, %s)")
         cursor.executemany(add_data, data)
 
         # Commit the transaction
@@ -189,6 +223,35 @@ for dict in gaming_dicts:
             # if no publisher, developer also becomes publisher
             if 'pub_name' not in dict:
                 dict['pub_name'] = dict['dev_name']
+
+            # get completion times
+            page_content = wait.until(
+                EC.presence_of_element_located((By.CLASS_NAME,
+                                                'content_75_static')))
+            game_times_table = page_content.find_element(By.CLASS_NAME,
+                                                         'GameStats_game_times__KHrRY')
+            inner_html = game_times_table.get_attribute('innerHTML')
+            driver.get("data:text/html;charset=utf-8," + inner_html)
+            # Find all h4 and h5 elements within li tags
+            #h4_elements = driver.find_elements(By.CSS_SELECTOR, 'li h4')
+            h5_elements = driver.find_elements(By.CSS_SELECTOR, 'li h5')
+
+            # Extract text from the h4 and h5 elements
+            #h4_texts = [element.text for element in h4_elements]
+            h5_texts = [element.text for element in h5_elements]
+            # some games only have one reported time (ME: Andromeda)
+            if len(h5_texts) > 1:
+                dict['main'] = h5_texts[0]
+                dict['main_sides'] = h5_texts[1]
+                dict['completionist'] = h5_texts[2]
+            else:
+                dict['main'] = h5_texts[0]
+                dict['main_sides'] = None
+                dict['completionist'] = None
+
+            #print("h4 elements:", h4_texts)
+            #print("h5 elements:", h5_texts)
+
             failed = False
             break  # break out of retry loop
         except TimeoutException:
@@ -198,38 +261,23 @@ for dict in gaming_dicts:
     if failed:
         raise Exception("Element could not be found after several retries")
 
-
-
-
-        # break
-        # # get completion times
-        # page_content = wait.until(EC.presence_of_element_located((By.CLASS_NAME,
-        #                                                           'content_75_static')))
-        # game_times_table = page_content.find_element(By.CLASS_NAME,
-        #                                              'GameStats_game_times__KHrRY')
-        # inner_html = game_times_table.get_attribute('innerHTML')
-        # driver.get("data:text/html;charset=utf-8," + inner_html)
-        # # Find all h4 and h5 elements within li tags
-        # h4_elements = driver.find_elements(By.CSS_SELECTOR, 'li h4')
-        # h5_elements = driver.find_elements(By.CSS_SELECTOR, 'li h5')
-        #
-        # # Extract text from the h4 and h5 elements
-        # h4_texts = [element.text for element in h4_elements]
-        # h5_texts = [element.text for element in h5_elements]
-        #
-        # print("h4 elements:", h4_texts)
-        # print("h5 elements:", h5_texts)
-        # break
-
-    # except TimeoutException:
-    #     print(f"Timed out waiting for {game_page}")
-
+# populate video_games table
 data_to_insert = []
 for dict in gaming_dicts:
-    print(dict['title'])
     data_to_insert.append((dict['game_num'], dict['title'],
                            dict['na_release'], dict['dev_name'],
                            dict['pub_name']))
 clear_table('video_games')
 insert_game_data(data_to_insert)
+
+# populate completion_times table
+data_to_insert = []
+for dict in gaming_dicts:
+    print(dict['title'])
+    data_to_insert.append((dict['game_num'], dict['title'],
+                           dict['main'], dict['main_sides'],
+                           dict['completionist']))
+clear_table('completion_times')
+insert_game_times(data_to_insert)
+
 driver.quit()
