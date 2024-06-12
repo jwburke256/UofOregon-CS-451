@@ -76,6 +76,41 @@ def insert_game_data(data):
         conn.close()
 
 
+def insert_publisher_data(data):
+    try:
+        # Establish a connection to the MySQL server
+        conn = mysql.connector.connect(
+            host='localhost',  # or '127.0.0.1'
+            user='root',
+            password='1178',
+            database='how_long_to_filter'
+        )
+
+        cursor = conn.cursor()
+
+        # Insert data
+        add_data = (
+            "INSERT INTO publisher (pub_name, dev_name) VALUES (%s, %s)")
+        cursor.executemany(add_data, data)
+
+        # Commit the transaction
+        conn.commit()
+        print(
+            f"Data inserted successfully: {cursor.rowcount} rows "
+            f"affected.")
+
+    except mysql.connector.Error as err:
+        if err.errno == errorcode.ER_ACCESS_DENIED_ERROR:
+            print("Something is wrong with your user name or password")
+        elif err.errno == errorcode.ER_BAD_DB_ERROR:
+            print("Database does not exist")
+        else:
+            print(err)
+    else:
+        cursor.close()
+        conn.close()
+
+
 def insert_game_times(data):
     try:
         # Establish a connection to the MySQL server
@@ -136,6 +171,9 @@ try:
                                                            'UserGameList_table_divider__GOZvP')
     # array of dictionaries for storing gaming info
     gaming_dicts = []
+
+    # set for storing unique publisher info
+    publisher_tuple_set = set()
 
     for table_divider in backlog_table_dividers:
         tr = table_divider.find_element(By.CLASS_NAME,
@@ -224,6 +262,9 @@ for dict in gaming_dicts:
             if 'pub_name' not in dict:
                 dict['pub_name'] = dict['dev_name']
 
+            # add tuple to publisher tuple set
+            publisher_tuple_set.add((dict['pub_name'], dict['dev_name']))
+
             # get completion times
             page_content = wait.until(
                 EC.presence_of_element_located((By.CLASS_NAME,
@@ -269,6 +310,13 @@ for dict in gaming_dicts:
                            dict['pub_name']))
 clear_table('video_games')
 insert_game_data(data_to_insert)
+
+# populate publisher table
+data_to_insert = []
+for tup in publisher_tuple_set:
+    data_to_insert.append((tup[0], tup[1],))
+clear_table('publisher')
+insert_publisher_data(data_to_insert)
 
 # populate completion_times table
 data_to_insert = []
