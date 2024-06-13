@@ -1,0 +1,92 @@
+
+
+<html>
+<head>
+       <title>HowLongToFilter</title>
+       <style>
+              .input-group {
+                     display: flex;
+                     flex-direction: column;
+                     margin-right: 10px;
+              }
+              .inline-inputs {
+                     display: flex;
+                     align-items: center;
+              }
+       </style>
+</head>
+
+<body bgcolor="white">
+
+<h3>Connecting to the how_long_to_filter Database using MySQL/PHP</h3>
+
+
+
+<hr>
+
+<p>
+Please select filtering options for backlog:
+
+<p>
+
+<form action="processForm.php" method="POST">
+       <div class="inline-inputs">
+              <div class="input-group">
+                     <label for="GamePublisherDropdown">Select Games/Publisher</label>
+                     <select id="GamePublisherDropdown" name="GamePublisherDropdown">
+                            <option value="" disabled selected hidden>Choose an option</option>
+                            <option value="Games">Games</option>
+                            <option value="Publisher">Publisher</option>
+                            <!-- Add more options as needed -->
+                     </select>
+              </div>
+              <div class="input-group">
+                     <label for="PlatformDropdown">Select Platform</label>
+                     <select id="PlatformDropdown" name="PlatformDropdown" disabled>
+                            <option value="All">All Platforms</option>
+                            <option value="Console">Console Only</option>
+                            <option value="PC">PC Only</option>
+                            <!-- Add more options as needed -->
+                     </select>
+              </div>
+              <div class="input-group">
+                     <label for="SortingDropdown">Select Sorting Method</label>
+                     <select id="SortingDropdown" name="Sortingropdown" disabled>
+                            <option value="" disabled selected hidden>Choose an option</option>
+                            <option value="asc_alph">Ascending Alphabetical</option>
+                            <option value="dsc_alph">Descending Alphabetical</option>
+                            <option value="option2">Ascending Release Date</option>
+                            <option value="option2">Descending Release Date</option>
+                            <!-- Add more options as needed -->
+                     </select>
+              </div>
+       </div>
+    <br>
+<input type="submit" value="submit">
+</form>
+
+
+
+<hr>
+
+<script>
+       document.addEventListener('DOMContentLoaded', (event) => {
+              const GamePublisherDropdown = document.getElementById('GamePublisherDropdown');
+              const PlatformDropdown = document.getElementById('PlatformDropdown');
+              const SortingDropdown = document.getElementById('SortingDropdown');
+
+              GamePublisherDropdown.addEventListener('change', function() {
+                     if (GamePublisherDropdown.value === 'Games') {
+                            PlatformDropdown.disabled = false;
+                            SortingDropdown.disabled = false;
+                     } else {
+                            PlatformDropdown.disabled = true;
+                            SortingDropdown.disabled = true;
+                            PlatformDropdown.value = "All"; // Reset platform dropdown if not enabled
+                            SortingDropdown.value = ""; // Reset sorting dropdown if not enabled
+                     }
+              });
+       });
+</script>
+</body>
+</html>

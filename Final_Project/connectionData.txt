@@ -1,0 +1,9 @@
+<?php
+
+$server = "ix.cs.uoregon.edu";
+$dbname ="how_long_to_filter";
+$user = "guest";
+$pass = "guest";
+$port="3061";
+
+?>
