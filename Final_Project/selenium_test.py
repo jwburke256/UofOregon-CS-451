@@ -4,7 +4,7 @@ from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
-from selenium.common.exceptions import TimeoutException
+from selenium.common.exceptions import TimeoutException, NoSuchElementException
 from selenium.common.exceptions import StaleElementReferenceException
 import mysql.connector
 from mysql.connector import errorcode
@@ -143,6 +143,38 @@ def insert_game_times(data):
         cursor.close()
         conn.close()
 
+def insert_speedrun_times(data):
+    try:
+        # Establish a connection to the MySQL server
+        conn = mysql.connector.connect(
+            host='localhost',  # or '127.0.0.1'
+            user='root',
+            password='1178',
+            database='how_long_to_filter'
+        )
+
+        cursor = conn.cursor()
+
+        # Insert data
+        add_data = ("INSERT INTO speed_runs (game_num, average, median, "
+                    "fastest, slowest) VALUES (%s, %s, %s, %s, %s)")
+        cursor.executemany(add_data, data)
+
+        # Commit the transaction
+        conn.commit()
+        print(f"Data inserted successfully: {cursor.rowcount} rows affected.")
+
+    except mysql.connector.Error as err:
+        if err.errno == errorcode.ER_ACCESS_DENIED_ERROR:
+            print("Something is wrong with your user name or password")
+        elif err.errno == errorcode.ER_BAD_DB_ERROR:
+            print("Database does not exist")
+        else:
+            print(err)
+    else:
+        cursor.close()
+        conn.close()
+
 
 # enable headless mode in Selenium
 options = Options()
@@ -212,7 +244,6 @@ except TimeoutException:
 #     print()
 
 # go through each game url and grab rest of data
-
 for dict in gaming_dicts:
     failed = True
     for _ in range(5):  # given 3 retries
@@ -302,6 +333,58 @@ for dict in gaming_dicts:
     if failed:
         raise Exception("Element could not be found after several retries")
 
+# separate loop to get speed run times, due to not all pages having speed runs
+for dict in gaming_dicts:
+    failed = True
+    for _ in range(5):  # given 3 retries
+        try:
+            game_page = dict["href"]
+            # pull the page
+            print(dict['title'])
+            # get speed run times if available
+            driver.get(game_page)
+
+            #html_content = driver.page_source
+            # Print the HTML content
+            #print(html_content)
+
+            WebDriverWait(driver, 10).until(
+                EC.presence_of_element_located((By.TAG_NAME, 'table')))
+
+            # Locate the specific table that contains the 'Any%' row
+            # Using XPath to locate the table and then the row containing 'Any%'
+            table = driver.find_element(By.XPATH,
+                                        "//table[contains(@class, "
+                                        "'GameTimeTable_game_main_table__7uN3H') and thead/tr/td[contains(text(), 'Speedruns')]]")
+            speed_run_row = table.find_element(By.XPATH,
+                                     ".//tr[td[contains(text(), 'Any%')]]")
+            td_elements = speed_run_row.find_elements(By.TAG_NAME, 'td')
+
+            # Extract the last four <td> elements
+            last_four_tds = td_elements[-4:]
+            dict['average'] = last_four_tds[0].text
+            dict['median'] = last_four_tds[1].text
+            dict['fastest'] = last_four_tds[2].text
+            dict['slowest'] = last_four_tds[3].text
+            # Print the text of the last four <td> elements
+            # for td in last_four_tds:
+            #     print(td.text)
+            # Print the HTML content of the found row
+            # print(speed_run_row.get_attribute('outerHTML'))
+
+            failed = False
+            break  # break out of retry loop
+        except TimeoutException:
+            print(f"Timed out waiting for {game_page}")
+        except StaleElementReferenceException:
+            time.sleep(1)
+        except NoSuchElementException:
+            print(f"The element containing 'Any%' was not found in {game_page}.")
+            failed = False
+            break  # break out of retry loop
+    if failed:
+        raise Exception("Element could not be found after several retries")
+
 # populate video_games table
 data_to_insert = []
 for dict in gaming_dicts:
@@ -327,5 +410,18 @@ for dict in gaming_dicts:
                            dict['completionist']))
 clear_table('completion_times')
 insert_game_times(data_to_insert)
+
+# populate speed_runs table
+data_to_insert = []
+for dict in gaming_dicts:
+    # need to check if speedrun time applies to game, skip if not
+    if 'average' in dict:
+        data_to_insert.append((dict['game_num'], dict['average'],
+                               dict['median'], dict['fastest'],
+                               dict['slowest']))
+    else:
+        pass
+clear_table('speed_runs')
+insert_speedrun_times(data_to_insert)
 
 driver.quit()
