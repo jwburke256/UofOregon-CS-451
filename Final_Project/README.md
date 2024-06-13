@@ -1,4 +1,4 @@
-# UOCS451 - Final Project #
+# UofOregon-CS-451 - Final Project #
 
 ## Overview
 
