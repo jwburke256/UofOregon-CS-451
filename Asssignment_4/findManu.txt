@@ -1,0 +1,46 @@
+
+
+<html>
+<head>
+       <title>CS 451 Assignment 4</title>
+</head>
+
+<body bgcolor="white">
+
+<h3>Connecting to the stores7 Database using MySQL/PHP</h3>
+
+
+
+<hr>
+
+<p>
+Please enter a manufacturer name:
+
+<p>
+
+<form action="findManuCust.php" method="POST">
+
+<input type="text" name="manufact"> <br>
+<input type="submit" value="submit">
+<input type="reset" value="erase">
+</form>
+
+
+
+<hr>
+
+<p>
+<a href="findManu.txt" >Contents</a>
+of this page.
+
+<p>
+<a href="findManuCust.txt" >Contents</a>
+of the PHP page that gets called.
+(And the <a href="connectionData.txt" >connection data</a>,
+kept separately for security reasons.)
+
+
+
+
+</body>
+</html>
