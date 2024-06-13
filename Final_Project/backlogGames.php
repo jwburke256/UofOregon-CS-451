@@ -22,6 +22,17 @@ or die('Error connecting to MySQL server.');
         th {
             background-color: #f2f2f2;
             text-align: left;
+	}
+	button {
+            margin: 20px 0;
+            padding: 10px 20px;
+            background-color: #d3d3d3;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #a9a9a9;
         }
   </style>
   </head>
@@ -33,40 +44,87 @@ or die('Error connecting to MySQL server.');
   
   
 <?php
-  
+
+$gamePublisherDropdown = $_POST['GamePublisherDropdown'];
 $platformDropdown = $_POST['PlatformDropdown'];
 $sortingDropdown = $_POST['SortingDropdown'];
 
-// $manufact = mysqli_real_escape_string($conn, $manufact);
-// this is a small attempt to avoid SQL injection
-// better to use prepared statements
+if ($gamePublisherDropdown === 'Games') {
+	if ($platformDropdown === 'All') {    
+		if ($sortingDropdown === 'asc_alph') {
+			$query = "SELECT vg.title, na_release, dev_name, pub_name, average, median, fastest, slowest, main, main_sides, completionist FROM video_games vg ";
+			$query .= "JOIN speed_runs sr USING(game_num) ";
+			$query .= "JOIN completion_times ct USING(game_num) ";
+    			$query .= "ORDER BY vg.title ASC;";
+		}
+		elseif ($sortingDropdown === 'dsc_alph') {
+			$query = "SELECT vg.title, na_release, dev_name, pub_name, average, median, fastest, slowest, main, main_sides, completionist FROM video_games vg ";
+			$query .= "JOIN speed_runs sr USING(game_num) ";
+			$query .= "JOIN completion_times ct USING(game_num) ";
+    			$query .= "ORDER BY vg.title DESC;";
+		}
+		elseif ($sortingDropdown === 'asc_rel') {
+			$query = "SELECT vg.title, na_release, dev_name, pub_name, average, median, fastest, slowest, main, main_sides, completionist FROM video_games vg ";
+			$query .= "JOIN speed_runs sr USING(game_num) ";
+			$query .= "JOIN completion_times ct USING(game_num) ";
+    			$query .= "ORDER BY na_release ASC;";
+		}
+		else { // dsc_rel
+			$query = "SELECT vg.title, na_release, dev_name, pub_name, average, median, fastest, slowest, main, main_sides, completionist FROM video_games vg ";
+			$query .= "JOIN speed_runs sr USING(game_num) ";
+			$query .= "JOIN completion_times ct USING(game_num) ";
+    			$query .= "ORDER BY na_release DESC;";	
+		}
 
-if ($platformDropdown === 'All') {    
-	if ($sortingDropdown === 'asc_alph') {
-		$query = "SELECT vg.title, na_release, dev_name, pub_name, average, median, fastest, slowest, main, main_sides, completionist FROM video_games vg";
-		$query .= "JOIN speed_runs sr USING(game_num)";
-		$query .= "JOIN completion_times ct USING(game_num)";
-    		$query .= "ORDER BY vg.title ASC;";
+	} elseif ($platformDropdown === 'Console') {    
+		if ($sortingDropdown === 'asc_alph') {
+			$query = "SELECT vg.title, na_release, platforms, selected_platform, dev_name, pub_name FROM video_games vg ";
+			$query .= "RIGHT JOIN console_titles cg USING(game_num) ";
+    			$query .= "ORDER BY vg.title ASC;";
+		}
+		elseif ($sortingDropdown === 'dsc_alph') {
+			$query = "SELECT vg.title, na_release, platforms, selected_platform, dev_name, pub_name FROM video_games vg ";
+			$query .= "RIGHT JOIN console_titles cg USING(game_num) ";
+			$query .= "ORDER BY vg.title DESC;";
+		}
+		elseif ($sortingDropdown === 'asc_rel') {
+			$query = "SELECT vg.title, na_release, platforms, selected_platform, dev_name, pub_name FROM video_games vg ";
+			$query .= "RIGHT JOIN console_titles cg USING(game_num) ";
+			$query .= "ORDER BY na_release ASC;";
+		}
+		else { // dsc_rel
+			$query = "SELECT vg.title, na_release, platforms, selected_platform, dev_name, pub_name FROM video_games vg ";
+			$query .= "RIGHT JOIN console_titles cg USING(game_num) ";
+			$query .= "ORDER BY na_release DESC;";	
+		}
+	} elseif ($platformDropdown === 'PC') {
+		if ($sortingDropdown === 'asc_alph') {
+			$query = "SELECT vg.title, na_release, ultrawide_supprt, hdr_support, current_price, dev_name, pub_name FROM video_games vg ";
+			$query .= "RIGHT JOIN pc_titles cg USING(game_num) ";
+    			$query .= "ORDER BY vg.title ASC;";
+		}
+		elseif ($sortingDropdown === 'dsc_alph') {
+			$query = "SELECT vg.title, na_release, ultrawide_supprt, hdr_support, current_price, dev_name, pub_name FROM video_games vg ";
+			$query .= "RIGHT JOIN pc_titles cg USING(game_num) ";
+    			$query .= "ORDER BY vg.title DESC;";
+		}
+		elseif ($sortingDropdown === 'asc_rel') {
+			$query = "SELECT vg.title, na_release, ultrawide_supprt, hdr_support, current_price, dev_name, pub_name FROM video_games vg ";
+			$query .= "RIGHT JOIN pc_titles cg USING(game_num) ";
+    			$query .= "ORDER BY na_release ASC;";
+		}
+		else { // dsc_rel
+			$query = "SELECT vg.title, na_release, ultrawide_supprt, hdr_support, current_price, dev_name, pub_name FROM video_games vg ";
+			$query .= "RIGHT JOIN pc_titles cg USING(game_num) ";
+    			$query .= "ORDER BY na_release DESC;";	
+		}
 	}
-	elseif ($sortingDropdown === 'dsc_alph') {
-		$query = "SELECT vg.title, na_release, dev_name, pub_name, average, median, fastest, slowest, main, main_sides, completionist FROM video_games vg";
-		$query .= "JOIN speed_runs sr USING(game_num)";
-		$query .= "JOIN completion_times ct USING(game_num)";
-    		$query .= "ORDER BY vg.title DESC;";
-	}
-	elseif ($sortingDropdown === 'asc_rel') {
-		$query = "SELECT vg.title, na_release, dev_name, pub_name, average, median, fastest, slowest, main, main_sides, completionist FROM video_games vg";
-		$query .= "JOIN speed_runs sr USING(game_num)";
-		$query .= "JOIN completion_times ct USING(game_num)";
-    		$query .= "ORDER BY na_release ASC;";
-	}
-	else { // dsc_rel
-		$query = "SELECT vg.title, na_release, dev_name, pub_name, average, median, fastest, slowest, main, main_sides, completionist FROM video_games vg";
-		$query .= "JOIN speed_runs sr USING(game_num)";
-		$query .= "JOIN completion_times ct USING(game_num)";
-    		$query .= "ORDER BY na_release DESC;";
-
-	}
+} elseif ($gamePublisherDropdown === 'Publisher') {
+	$query = "SELECT * FROM how_long_to_filter.publisher ";
+	$query .= "ORDER BY pub_name ASC;";	
+} elseif ($gamePublisherDropdown === 'wiki') {
+	$query = "SELECT title, url FROM how_long_to_filter.ign_wiki ";
+	$query .= "ORDER BY title ASC;";	
 }
 
 ?>
@@ -84,11 +142,10 @@ Result of query:
 <p>
 
 <?php
-//$result = mysqli_query($conn, $query)
-//or die(mysqli_error($conn));
+$result = mysqli_query($conn, $query)
+or die(mysqli_error($conn));
 
 ?>
-<!---
 <table>
         <tr>
             <?php
@@ -106,33 +163,35 @@ Result of query:
         if ($result->num_rows > 0) {
             while ($row = $result->fetch_assoc()) {
                 echo "<tr>";
-                foreach ($row as $cell) {
-                    echo "<td>" . htmlspecialchars($cell) . "</td>";
-                }
-                echo "</tr>";
+		foreach ($row as $key => $cell) {
+                	echo "<td>";
+                	if ($key == 'url') {
+                    		echo "<a href='" . htmlspecialchars($cell) . "'>" . htmlspecialchars($cell) . "</a>";
+                	} else {
+                    		echo htmlspecialchars($cell);
+                	}
+		echo "</td>";
+		}
             }
         } else {
             echo "<tr><td colspan='" . count($fields) . "'>No results found</td></tr>";
         }
         ?>
 </table>
--->
 
+<hr>
 
-
-// print "<pre>";
-
-// if ($platformDropdown === 'All') {    
-//	while($row = mysqli_fetch_array($result, MYSQLI_BOTH)) {
-//		print "\n";
-//		print "$row[fname]  $row[lname] $row[description]";
+<button onclick="goBack()">Back</button>
+<script>
+	function goBack() {
+		window.location.href = "http://ix.cs.uoregon.edu/~jburke2/HowLongToFilter/index.html";
 	}
-//print "</pre>";
+</script>
 
 <?php
-//mysqli_free_result($result);
+mysqli_free_result($result);
 
-//mysqli_close($conn);
+mysqli_close($conn);
 
 ?>
  

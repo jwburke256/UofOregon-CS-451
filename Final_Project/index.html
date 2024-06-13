@@ -29,15 +29,15 @@ Please select filtering options for backlog:
 
 <p>
 
-<form action="processForm.php" method="POST">
+<form action="backlogGames.php" method="POST">
        <div class="inline-inputs">
               <div class="input-group">
-                     <label for="GamePublisherDropdown">Select Games/Publisher</label>
+                     <label for="GamePublisherDropdown">Select Games/Publisher/Walkthrough</label>
                      <select id="GamePublisherDropdown" name="GamePublisherDropdown">
                             <option value="" disabled selected hidden>Choose an option</option>
                             <option value="Games">Games</option>
                             <option value="Publisher">Publisher</option>
-                            <!-- Add more options as needed -->
+                            <option value="wiki">IGN Walkthrough</option>
                      </select>
               </div>
               <div class="input-group">
@@ -46,18 +46,16 @@ Please select filtering options for backlog:
                             <option value="All">All Platforms</option>
                             <option value="Console">Console Only</option>
                             <option value="PC">PC Only</option>
-                            <!-- Add more options as needed -->
                      </select>
               </div>
               <div class="input-group">
                      <label for="SortingDropdown">Select Sorting Method</label>
-                     <select id="SortingDropdown" name="Sortingropdown" disabled>
+                     <select id="SortingDropdown" name="SortingDropdown" disabled>
                             <option value="" disabled selected hidden>Choose an option</option>
                             <option value="asc_alph">Ascending Alphabetical</option>
                             <option value="dsc_alph">Descending Alphabetical</option>
-                            <option value="option2">Ascending Release Date</option>
-                            <option value="option2">Descending Release Date</option>
-                            <!-- Add more options as needed -->
+                            <option value="asc_rel">Ascending Release Date</option>
+                            <option value="dsc_rel">Descending Release Date</option>
                      </select>
               </div>
        </div>
