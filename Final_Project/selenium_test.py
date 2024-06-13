@@ -143,6 +143,7 @@ def insert_game_times(data):
         cursor.close()
         conn.close()
 
+
 def insert_speedrun_times(data):
     try:
         # Establish a connection to the MySQL server
@@ -175,6 +176,38 @@ def insert_speedrun_times(data):
         cursor.close()
         conn.close()
 
+
+def insert_ign_wiki(data):
+    try:
+        # Establish a connection to the MySQL server
+        conn = mysql.connector.connect(
+            host='localhost',  # or '127.0.0.1'
+            user='root',
+            password='1178',
+            database='how_long_to_filter'
+        )
+
+        cursor = conn.cursor()
+
+        # Insert data
+        add_data = ("INSERT INTO ign_wiki (game_num, title, url) VALUES (%s, "
+                    "%s, %s)")
+        cursor.executemany(add_data, data)
+
+        # Commit the transaction
+        conn.commit()
+        print(f"Data inserted successfully: {cursor.rowcount} rows affected.")
+
+    except mysql.connector.Error as err:
+        if err.errno == errorcode.ER_ACCESS_DENIED_ERROR:
+            print("Something is wrong with your user name or password")
+        elif err.errno == errorcode.ER_BAD_DB_ERROR:
+            print("Database does not exist")
+        else:
+            print(err)
+    else:
+        cursor.close()
+        conn.close()
 
 # enable headless mode in Selenium
 options = Options()
@@ -385,6 +418,46 @@ for dict in gaming_dicts:
     if failed:
         raise Exception("Element could not be found after several retries")
 
+
+# separate loop to get ign walkthroughs, due to not all pages having one
+for dict in gaming_dicts:
+    failed = True
+    for _ in range(5):  # given 3 retries
+        try:
+            game_page = dict["href"]
+            # pull the page
+            print(dict['title'])
+            # get speed run times if available
+            driver.get(game_page)
+
+            #html_content = driver.page_source
+            # Print the HTML content
+            #print(html_content)
+
+            wiki_nav = driver.find_element(By.CLASS_NAME,
+                                           'GameWikiNav_wiki_nav__D7ok3')
+            # Locate the specific table that contains the 'Any%' row
+            # Using XPath to locate the table and then the row containing 'Any%'
+            walkthrough_link = wiki_nav.find_element(By.PARTIAL_LINK_TEXT,
+                                                     'Walkthrough')
+            walkthrough_href = walkthrough_link.get_attribute('href')
+            print(walkthrough_href)
+            dict['walkthrough_href'] = walkthrough_href
+
+            failed = False
+            break  # break out of retry loop
+        except TimeoutException:
+            print(f"Timed out waiting for {game_page}")
+        except StaleElementReferenceException:
+            time.sleep(1)
+        except NoSuchElementException:
+            print(f"The element containing 'Walkthrough' was not found in"
+                  f" {game_page}.")
+            failed = False
+            break  # break out of retry loop
+    if failed:
+        raise Exception("Element could not be found after several retries")
+
 # populate video_games table
 data_to_insert = []
 for dict in gaming_dicts:
@@ -423,5 +496,17 @@ for dict in gaming_dicts:
         pass
 clear_table('speed_runs')
 insert_speedrun_times(data_to_insert)
+
+# populate ign_wiki table
+data_to_insert = []
+for dict in gaming_dicts:
+    # need to check if walkthrough is available for game, skip if not
+    if 'walkthrough_href' in dict:
+        data_to_insert.append((dict['game_num'], dict['title'],
+                               dict['walkthrough_href']))
+    else:
+        pass
+clear_table('ign_wiki')
+insert_ign_wiki(data_to_insert)
 
 driver.quit()
